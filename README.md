@@ -70,7 +70,7 @@ This repository was generated on **February 16, 2026** using [Claude Code](https
 3. All 7 notebooks, README, and supporting files were generated in a single session
 4. Existing [IDC-Tutorials](https://github.com/ImagingDataCommons/IDC-Tutorials) pathomics notebooks were used as reference for IDC API conventions
 
-**Limitations:** The notebooks have **not been executed end-to-end** and need testing on Google Colab. TIAToolbox APIs were researched via documentation, not verified against installed code. Coordinate transforms, output file formats, and specific API parameter names may need corrections. See [dev/PROCESS.md](dev/PROCESS.md) for the full development log including detailed limitations and recommendations.
+**Colab testing (in progress):** Notebook 01 has been partially tested on Colab. Several dependency and API issues were discovered and fixed (numpy binary incompatibility, missing OpenSlide, zarr/numcodecs version conflict, DICOMWSIReader not populating `objective_power`, `read_rect` coordinate system). Notebooks 02-07 still need end-to-end testing. See [dev/PROCESS.md](dev/PROCESS.md) for the full development log including issues found, fixes applied, and remaining limitations.
 
 ## Citations
 
