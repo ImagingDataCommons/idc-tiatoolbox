@@ -135,16 +135,21 @@ if info.mpp is None:
 ```
 Applied to all 7 notebooks.
 
-### 5. `read_rect` Coordinate System
+### 5. `read_rect` Coordinate System with DICOMWSIReader
 
-**Problem:** `WSIReader.read_rect()` defaults to `coord_space="baseline"`, but the DICOMWSIReader (via wsidicom) raises `WsiDicomOutOfBoundsError` when baseline coordinates exceed the target pyramid level dimensions.
+**Problem:** `WSIReader.read_rect()` defaults to `coord_space="baseline"`, but the DICOMWSIReader (via wsidicom) raises `WsiDicomOutOfBoundsError` when baseline coordinates exceed the target pyramid level dimensions. Using `coord_space="resolution"` with properly scaled coordinates also triggers the same error when reading at lower resolutions (e.g., 5x or 10x from a 20x slide).
 
-**Fix:** Use `coord_space="resolution"` explicitly, with location in the target resolution's coordinate space:
+**Fix:** For multi-resolution viewing of the same region, use `read_bounds()` instead — it accepts a bounding box in baseline coordinates and handles resolution scaling internally:
 ```python
-scale = power / info.objective_power
-loc_x = int(baseline_x * scale) - patch_size[0] // 2
-region = reader.read_rect(location=(loc_x, loc_y), size=patch_size,
-                          resolution=power, units="power", coord_space="resolution")
+bounds = (left, top, right, bottom)  # baseline coordinates
+region = reader.read_bounds(bounds=bounds, resolution=power, units="power")
+```
+
+For fixed-size patch extraction, use `read_rect()` at the **native** resolution with `coord_space="resolution"` (where resolution coordinates equal baseline coordinates):
+```python
+patch = reader.read_rect(location=(loc_x, loc_y), size=(256, 256),
+                         resolution=native_power, units="power",
+                         coord_space="resolution")
 ```
 
 ## Remaining Known Limitations
