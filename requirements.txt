@@ -1,0 +1,22 @@
+# Core dependencies for idc-tiatoolbox tutorial notebooks
+# Notebooks are designed for Google Colab; each installs its own deps.
+
+# IDC data access
+idc-index>=0.11.0
+
+# TIAToolbox (computational pathology)
+tiatoolbox>=1.5.0
+
+# DICOM processing (for annotation comparison notebook)
+highdicom
+pydicom
+
+# Data handling
+pandas
+numpy
+
+# Visualization
+matplotlib
+
+# Geometry (for annotation comparison)
+shapely
