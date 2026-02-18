@@ -22,6 +22,20 @@ TIAToolbox's `DICOMWSIReader` can directly read IDC's DICOM WSI files, making th
 | 06 | [Nucleus Segmentation](notebooks/06_nucleus_instance_segmentation.ipynb) | NucleusInstanceSegmentor | TCGA | Required |
 | 07 | [Comparing with IDC Annotations](notebooks/07_comparing_with_idc_annotations.ipynb) | HoVer-Net, SQLiteStore | TCGA + Pan-Cancer ANN | Recommended |
 
+## TIAToolbox Version
+
+All notebooks pin **tiatoolbox==1.6.0**. This is necessary because several workarounds are required for DICOM WSI compatibility at this version, and pinning ensures they remain matched to the API they were tested against.
+
+### Known Issues and Workarounds (tiatoolbox 1.6.0)
+
+The following issues affect DICOM WSI files from IDC. Workarounds are implemented directly in the notebooks where needed:
+
+- **`DICOMWSIReader` does not populate `objective_power` or `mpp`** (all notebooks): The reader may return `None` for these metadata fields. Workaround: set them manually from IDC's `sm_index` query results after opening the slide.
+- **`WSIPatchDataset` rejects directories** (notebook 04): `PatchPredictor` in WSI mode calls `Path.is_file()` which fails for DICOM WSI directories (which contain multiple `.dcm` files). Workaround: temporarily patch `Path.is_file` to also accept directories during the `predict()` call.
+- **`PatchPredictor` creates its own `WSIReader` internally** (notebook 04): Metadata fixes applied to the user's reader don't carry over. Workaround: temporarily patch `WSIReader.open` to inject `objective_power` and `mpp` into any newly created reader.
+- **`PatchPredictor` coordinates are in extraction resolution space** (notebook 04): Returned patch coordinates use `coord_space="resolution"` (at the requested mpp), not baseline pixel coordinates. Visualization code must use `reader.slide_dimensions(resolution=..., units="mpp")` and `read_bounds(..., coord_space="resolution")` accordingly.
+- **`DICOMWSIReader` coordinate issues at non-baseline resolutions** (notebooks 05, 06, 07): `read_bounds` with resolutions mapping to non-baseline pyramid levels can produce incorrect results. Workaround: read at native resolution and resize manually.
+
 ## Quick Start
 
 Click the "Open in Colab" badge at the top of any notebook to run it directly in Google Colab. No local setup required.
@@ -70,7 +84,7 @@ This repository was generated on **February 16, 2026** using [Claude Code](https
 3. All 7 notebooks, README, and supporting files were generated in a single session
 4. Existing [IDC-Tutorials](https://github.com/ImagingDataCommons/IDC-Tutorials) pathomics notebooks were used as reference for IDC API conventions
 
-**Colab testing (in progress):** Notebook 01 has been partially tested on Colab. Several dependency and API issues were discovered and fixed (numpy binary incompatibility, missing OpenSlide, zarr/numcodecs version conflict, DICOMWSIReader not populating `objective_power`, `read_rect` coordinate system). Notebooks 02-07 still need end-to-end testing. See [dev/PROCESS.md](dev/PROCESS.md) for the full development log including issues found, fixes applied, and remaining limitations.
+**Colab testing:** All 7 notebooks have been tested end-to-end on Google Colab and confirmed to run successfully. Notebook outputs are saved in the repository so users can preview results without running the code. Several dependency and API issues were discovered and fixed during testing (numpy binary incompatibility, missing OpenSlide, zarr/numcodecs version conflict, DICOMWSIReader metadata gaps, PatchPredictor DICOM directory support, coordinate space mismatches). See the [Known Issues and Workarounds](#known-issues-and-workarounds-tiatoolbox-160) section and [dev/PROCESS.md](dev/PROCESS.md) for details.
 
 ## Citations
 
