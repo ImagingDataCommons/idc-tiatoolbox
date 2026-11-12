@@ -27,7 +27,16 @@ TIAToolbox's `DICOMWSIReader` can directly read IDC's DICOM WSI files, making th
 
 ## TIAToolbox Version
 
-All notebooks pin **tiatoolbox==1.6.0**. This is necessary because several workarounds are required for DICOM WSI compatibility at this version, and pinning ensures they remain matched to the API they were tested against.
+Notebook 05 uses **tiatoolbox==2.1.3**. Its optional CPU-only landmark check verifies the 5× read against independently decoded DICOM pixels from the public C3L-03262 slide. To run this check locally, use a fresh Python 3.12 environment:
+
+```bash
+python -m pip install "tiatoolbox==2.1.3" idc-index openslide-bin
+python examples/check_dicom_landmark.py --download-dir ./landmark-data
+# Or reuse the folder containing the five DICOM instances:
+python examples/check_dicom_landmark.py --series-dir /path/to/series
+```
+
+The 1.6.0 notebooks pin their dependencies to match the API used by the workarounds below.
 
 ### Known Issues and Workarounds (tiatoolbox 1.6.0)
 
@@ -37,7 +46,7 @@ The following issues affect DICOM WSI files from IDC. Workarounds are implemente
 - **`WSIPatchDataset` rejects directories** (notebook 04): `PatchPredictor` in WSI mode calls `Path.is_file()` which fails for DICOM WSI directories (which contain multiple `.dcm` files). Workaround: temporarily patch `Path.is_file` to also accept directories during the `predict()` call.
 - **`PatchPredictor` creates its own `WSIReader` internally** (notebook 04): Metadata fixes applied to the user's reader don't carry over. Workaround: temporarily patch `WSIReader.open` to inject `objective_power` and `mpp` into any newly created reader.
 - **`PatchPredictor` coordinates are in extraction resolution space** (notebook 04): Returned patch coordinates use `coord_space="resolution"` (at the requested mpp), not baseline pixel coordinates. Visualization code must use `reader.slide_dimensions(resolution=..., units="mpp")` and `read_bounds(..., coord_space="resolution")` accordingly.
-- **`DICOMWSIReader` coordinate issues at non-baseline resolutions** (notebooks 05, 06, 07): `read_bounds` with resolutions mapping to non-baseline pyramid levels can produce incorrect results. Workaround: read at native resolution and resize manually.
+- **`DICOMWSIReader` coordinate issues at non-baseline resolutions** (notebooks 06, 07): `read_bounds` with resolutions mapping to non-baseline pyramid levels can produce incorrect results. Workaround: read at native resolution and resize manually.
 
 ## Quick Start
 
